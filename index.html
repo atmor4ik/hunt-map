@@ -2,42 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Hunt Map Zoom</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background-color: #111;
-    }
-
-    .zoom-wrapper {
-      transform-origin: top left;
-      transition: transform 0.2s ease;
-    }
-
-    .map-container {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      background: url('https://i.postimg.cc/XY7HK0t9/Basemap-Mammon-V1.png') center/contain no-repeat;
-      background-size: contain;
-    }
-
-    .marker {
-      position: absolute;
-      width: 32px;
-      height: 32px;
-      background: url('https://i.imgur.com/dRhFiqs.png') center/cover no-repeat;
-      cursor: pointer;
-    }
-  </style>
+  <title>Hunt Map</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="zoomWrapper" class="zoom-wrapper">
     <div class="map-container">
-      <!-- Пример маркеров -->
+      <!-- Твои маркеры -->
       <div class="marker" style="top: 40%; left: 45%;"></div>
-      <div class="marker" style="top: 60%; left: 65%;"></div>
     </div>
   </div>
 
