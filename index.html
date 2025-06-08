@@ -2,28 +2,140 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Hunt Map</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hunt Showdown Interactive Map</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: #000;
+      overflow: hidden;
+    }
+    .map-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: url('https://i.postimg.cc/XY7HK0t9/Basemap-Mammon-V1.png') center/contain no-repeat;
+    }
+    .marker {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: url('https://i.postimg.cc/13RfHW9k/23a99bd87cde48535fceabe5ed14957c-removebg-preview.png') center/cover no-repeat;
+      cursor: pointer;
+    }
+    .tooltip {
+      position: absolute;
+      display: none;
+      border: 2px solid #fff;
+      max-width: 300px;
+      z-index: 10;
+      background-color: #111;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    .tooltip img {
+      width: 100%;
+      height: auto;
+      cursor: zoom-in;
+      transition: transform 0.2s ease;
+    }
+    .tooltip img.enlarged {
+      transform: scale(2);
+      cursor: zoom-out;
+    }
+  </style>
 </head>
 <body>
-  <div id="zoomWrapper" class="zoom-wrapper">
-    <div class="map-container">
-      <!-- Твои маркеры -->
-      <div class="marker" style="top: 40%; left: 45%;"></div>
-    </div>
+  <script>
+  const zoomWrapper = document.getElementById('zoomWrapper');
+  let scale = 1;
+  let pos = { x: 0, y: 0 };
+  let origin = { x: 0, y: 0 };
+  let isDragging = false;
+
+  // Масштабирование по положению мыши
+  window.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    const rect = zoomWrapper.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const delta = Math.sign(e.deltaY);
+    const zoom = 1 - delta * 0.1;
+
+    const newScale = Math.max(0.5, Math.min(3, scale * zoom));
+    const ratio = newScale / scale;
+
+    pos.x = mouseX - (mouseX - pos.x) * ratio;
+    pos.y = mouseY - (mouseY - pos.y) * ratio;
+    scale = newScale;
+    updateTransform();
+  }, { passive: false });
+
+  // Перетаскивание карты
+  zoomWrapper.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    origin.x = e.clientX - pos.x;
+    origin.y = e.clientY - pos.y;
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      pos.x = e.clientX - origin.x;
+      pos.y = e.clientY - origin.y;
+      updateTransform();
+    }
+  });
+
+  function updateTransform() {
+    zoomWrapper.style.transform = `translate(${pos.x}px, ${pos.y}px) scale(${scale})`;
+  }
+</script>
+
+  <div class="map-container" id="map">
+    <!-- Метка 1: Кассовый аппарат -->
+    <div class="marker" style="top: 81.32%; left: 85.57%;" data-img="https://i.imgur.com/FqSRAB7.png"></div>
+    
+    <!-- Метка 2: Кемперская точка -->
+    <div class="marker" style="top: 28%; left: 33%;" data-img="https://i.imgur.com/MOYMS0r.png"></div>
+
+    <!-- Метка 3: Воронье место -->
+    <div class="marker" style="top: 62%; left: 25%;" data-img="https://i.imgur.com/pwiylno.png"></div>
+
+    <div class="tooltip" id="tooltip"></div>
   </div>
 
   <script>
-    let scale = 1;
-    const zoomWrapper = document.getElementById('zoomWrapper');
+    const tooltip = document.getElementById('tooltip');
+    const markers = document.querySelectorAll('.marker');
 
-    window.addEventListener('wheel', function (e) {
-      e.preventDefault();
-      const delta = Math.sign(e.deltaY);
-      scale -= delta * 0.1;
-      scale = Math.max(0.5, Math.min(scale, 3));
-      zoomWrapper.style.transform = `scale(${scale})`;
-    }, { passive: false });
+    markers.forEach(marker => {
+      marker.addEventListener('mouseover', () => {
+        const imgUrl = marker.getAttribute('data-img');
+        tooltip.innerHTML = `<img src="${imgUrl}" />`;
+        tooltip.style.display = 'block';
+      });
+
+      marker.addEventListener('mousemove', e => {
+        tooltip.style.left = e.pageX + 20 + 'px';
+        tooltip.style.top = e.pageY + 20 + 'px';
+      });
+
+      marker.addEventListener('mouseout', () => {
+        tooltip.style.display = 'none';
+      });
+    });
+
+    // Увеличение картинки при клике
+    tooltip.addEventListener('click', e => {
+      const img = tooltip.querySelector('img');
+      if (!img) return;
+      img.classList.toggle('enlarged');
+    });
   </script>
 </body>
 </html>
