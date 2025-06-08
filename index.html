@@ -7,15 +7,27 @@
   <style>
     body {
       margin: 0;
-      font-family: sans-serif;
-      background-color: #000;
-      overflow: hidden;
-    }
-    .map-container {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      background: url('https://i.postimg.cc/XY7HK0t9/Basemap-Mammon-V1.png') center/contain no-repeat;
+  overflow: hidden;
+  background-color: #111;
+  user-select: none;
+}
+
+.zoom-wrapper {
+  transform-origin: top left;
+  transition: transform 0.1s ease;
+  cursor: grab;
+}
+
+.zoom-wrapper:active {
+  cursor: grabbing;
+}
+
+.map-container {
+  position: relative;
+  width: 2040px;
+  height: 2040px;
+  background: url('https://i.postimg.cc/XY7HK0t9/Basemap-Mammon-V1.png') center/contain no-repeat;
+  background-size: 100% 100%;
     }
     .marker {
       position: absolute;
