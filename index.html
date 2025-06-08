@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hunt Showdown Interactive Map</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: #000;
+      overflow: hidden;
+    }
+    .map-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: url('https://i.imgur.com/jWXtRmY.jpg') center/contain no-repeat;
+    }
+    .marker {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      background: url('https://i.imgur.com/dRhFiqs.png') center/cover no-repeat;
+      cursor: pointer;
+    }
+    .tooltip {
+      position: absolute;
+      display: none;
+      border: 2px solid #fff;
+      max-width: 300px;
+      z-index: 10;
+      background-color: #111;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    .tooltip img {
+      width: 100%;
+      height: auto;
+      cursor: zoom-in;
+      transition: transform 0.2s ease;
+    }
+    .tooltip img.enlarged {
+      transform: scale(2);
+      cursor: zoom-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="map-container" id="map">
+    <!-- Метка 1: Кассовый аппарат -->
+    <div class="marker" style="top: 45%; left: 60%;" data-img="https://i.imgur.com/FqSRAB7.png"></div>
+    
+    <!-- Метка 2: Кемперская точка -->
+    <div class="marker" style="top: 28%; left: 33%;" data-img="https://i.imgur.com/MOYMS0r.png"></div>
+
+    <!-- Метка 3: Воронье место -->
+    <div class="marker" style="top: 62%; left: 25%;" data-img="https://i.imgur.com/pwiylno.png"></div>
+
+    <div class="tooltip" id="tooltip"></div>
+  </div>
+
+  <script>
+    const tooltip = document.getElementById('tooltip');
+    const markers = document.querySelectorAll('.marker');
+
+    markers.forEach(marker => {
+      marker.addEventListener('mouseover', () => {
+        const imgUrl = marker.getAttribute('data-img');
+        tooltip.innerHTML = `<img src="${imgUrl}" />`;
+        tooltip.style.display = 'block';
+      });
+
+      marker.addEventListener('mousemove', e => {
+        tooltip.style.left = e.pageX + 20 + 'px';
+        tooltip.style.top = e.pageY + 20 + 'px';
+      });
+
+      marker.addEventListener('mouseout', () => {
+        tooltip.style.display = 'none';
+      });
+    });
+
+    // Увеличение картинки при клике
+    tooltip.addEventListener('click', e => {
+      const img = tooltip.querySelector('img');
+      if (!img) return;
+      img.classList.toggle('enlarged');
+    });
+  </script>
+</body>
+</html>
