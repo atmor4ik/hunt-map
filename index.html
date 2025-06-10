@@ -54,14 +54,68 @@
       display: block;
     }
     .tooltip img.enlarged {
-      transform: scale(2);
       cursor: zoom-out;
-      position: relative;
+      position: fixed;
       z-index: 1001;
+      max-width: 90vw;
+      max-height: 90vh;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      border: 3px solid #d4af37;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+      object-fit: contain;
+    }
+    
+    /* Панель переключения карт */
+    .map-selector {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 500;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .map-button {
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #d4af37;
+      color: #d4af37;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      min-width: 80px;
+    }
+    
+    .map-button:hover {
+      background: rgba(212, 175, 55, 0.2);
+      transform: translateY(-2px);
+    }
+    
+    .map-button.active {
+      background: #d4af37;
+      color: #000;
+      font-weight: bold;
     }
     
     /* Responsive design for smaller screens */
     @media (max-width: 768px) {
+      .map-selector {
+        top: 10px;
+        left: 10px;
+        gap: 5px;
+      }
+      
+      .map-button {
+        padding: 6px 12px;
+        font-size: 12px;
+        min-width: 60px;
+      }
+      
       .tooltip {
         max-width: 250px;
         padding: 6px;
@@ -73,11 +127,24 @@
       }
       
       .tooltip img.enlarged {
-        transform: scale(1.5);
+        max-width: 85vw;
+        max-height: 85vh;
       }
     }
     
     @media (max-width: 480px) {
+      .map-selector {
+        top: 5px;
+        left: 5px;
+        gap: 3px;
+      }
+      
+      .map-button {
+        padding: 4px 8px;
+        font-size: 11px;
+        min-width: 50px;
+      }
+      
       .tooltip {
         max-width: 200px;
         padding: 4px;
@@ -89,18 +156,24 @@
       }
       
       .tooltip img.enlarged {
-        transform: scale(1.3);
+        max-width: 80vw;
+        max-height: 80vh;
       }
     }
   </style>
 </head>
 <body>
+  <!-- Панель выбора карт -->
+  <div class="map-selector">
+    <button class="map-button active" data-map="map1">Карта 1</button>
+    <button class="map-button" data-map="map2">Карта 2</button>
+    <button class="map-button" data-map="map3">Карта 3</button>
+    <button class="map-button" data-map="map4">Карта 4</button>
+  </div>
+
   <div class="map-wrapper" id="mapWrapper">
     <div class="map" id="map">
-      <!-- Hunt: Showdown map markers with authentic locations -->
-      <div class="marker" style="top: 28%; left: 33%;" data-img="https://i.imgur.com/MOYMS0r.png"></div>
-      <div class="marker" style="top: 62%; left: 25%;" data-img="https://i.imgur.com/pwiylno.png"></div>
-      <div class="marker" style="top: 81.2%; left: 85.7%;" data-img="https://i.imgur.com/pfCGLC7.jpg"></div>
+      <!-- Маркеры будут динамически загружаться для каждой карты -->
     </div>
   </div>
   
@@ -120,10 +193,128 @@
     let isPanning = false;
     let start = { x: 0, y: 0 };
 
+    // Конфигурация карт
+    const mapConfigs = {
+      map1: {
+        name: 'Карта 1',
+        background: 'https://i.postimg.cc/XY7HK0t9/Basemap-Mammon-V1.png',
+        markers: [
+          { top: '28%', left: '33%', img: 'https://i.imgur.com/MOYMS0r.png' },
+          { top: '62%', left: '25%', img: 'https://i.imgur.com/pwiylno.png' },
+          { top: '81.2%', left: '85.7%', img: 'https://i.imgur.com/pfCGLC7.jpg' }
+        ]
+      },
+      map2: {
+        name: 'Карта 2',
+        background: 'https://i.postimg.cc/XY7HK0t9/Basemap-Mammon-V1.png',
+        markers: [
+          { top: '35%', left: '40%', img: 'https://i.imgur.com/MOYMS0r.png' },
+          { top: '55%', left: '30%', img: 'https://i.imgur.com/pwiylno.png' },
+          { top: '70%', left: '75%', img: 'https://i.imgur.com/pfCGLC7.jpg' }
+        ]
+      },
+      map3: {
+        name: 'Карта 3',
+        background: 'https://i.postimg.cc/XY7HK0t9/Basemap-Mammon-V1.png',
+        markers: [
+          { top: '20%', left: '50%', img: 'https://i.imgur.com/MOYMS0r.png' },
+          { top: '45%', left: '60%', img: 'https://i.imgur.com/pwiylno.png' },
+          { top: '80%', left: '20%', img: 'https://i.imgur.com/pfCGLC7.jpg' }
+        ]
+      },
+      map4: {
+        name: 'Карта 4',
+        background: 'https://i.postimg.cc/XY7HK0t9/Basemap-Mammon-V1.png',
+        markers: [
+          { top: '40%', left: '25%', img: 'https://i.imgur.com/MOYMS0r.png' },
+          { top: '30%', left: '70%', img: 'https://i.imgur.com/pwiylno.png' },
+          { top: '65%', left: '55%', img: 'https://i.imgur.com/pfCGLC7.jpg' }
+        ]
+      }
+    };
+
+    let currentMap = 'map1';
+
+    // Функция загрузки карты
+    function loadMap(mapId) {
+      const config = mapConfigs[mapId];
+      if (!config) return;
+
+      currentMap = mapId;
+      
+      // Обновляем фон карты
+      map.style.background = `url('${config.background}') no-repeat center`;
+      map.style.backgroundSize = 'cover';
+      
+      // Сбрасываем позицию и масштаб
+      scale = 1;
+      origin = { x: 0, y: 0 };
+      map.style.transform = `translate(${origin.x}px, ${origin.y}px) scale(${scale})`;
+      
+      // Скрываем тултип
+      tooltip.style.display = 'none';
+      tooltipImg.classList.remove('enlarged');
+      
+      // Очищаем старые маркеры
+      map.innerHTML = '';
+      
+      // Добавляем новые маркеры
+      config.markers.forEach(markerData => {
+        const marker = document.createElement('div');
+        marker.className = 'marker';
+        marker.style.top = markerData.top;
+        marker.style.left = markerData.left;
+        marker.setAttribute('data-img', markerData.img);
+        map.appendChild(marker);
+      });
+      
+      // Переинициализируем обработчики событий для новых маркеров
+      initializeMarkers();
+      
+      // Обновляем активную кнопку
+      document.querySelectorAll('.map-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.querySelector(`[data-map="${mapId}"]`).classList.add('active');
+    }
+
+    // Функция инициализации обработчиков маркеров
+    function initializeMarkers() {
+      document.querySelectorAll('.marker').forEach(marker => {
+        marker.addEventListener('mouseenter', e => {
+          tooltipImg.src = marker.dataset.img;
+          tooltip.style.display = 'block';
+        });
+
+        marker.addEventListener('mouseleave', () => {
+          if (!tooltipImg.classList.contains('enlarged')) {
+            tooltip.style.display = 'none';
+          }
+        });
+
+        marker.addEventListener('mousemove', e => {
+          tooltip.style.left = `${e.pageX + 15}px`;
+          tooltip.style.top = `${e.pageY + 15}px`;
+        });
+
+        marker.addEventListener('click', () => {
+          tooltipImg.classList.toggle('enlarged');
+        });
+      });
+    }
+
+    // Инициализация переключателей карт
+    document.querySelectorAll('.map-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const mapId = button.getAttribute('data-map');
+        loadMap(mapId);
+      });
+    });
+
     // Map panning functionality
     wrapper.addEventListener('mousedown', e => {
       // Prevent panning when clicking on markers or tooltip
-      if (e.target.classList.contains('marker') || e.target.closest('.tooltip')) {
+      if (e.target.classList.contains('marker') || e.target.closest('.tooltip') || e.target.closest('.map-selector')) {
         return;
       }
       
@@ -168,33 +359,53 @@
       map.style.transform = `translate(${origin.x}px, ${origin.y}px) scale(${scale})`;
     }, { passive: false });
 
-    // Marker interaction functionality
-    document.querySelectorAll('.marker').forEach(marker => {
-      marker.addEventListener('mouseenter', e => {
-        tooltipImg.src = marker.dataset.img;
-        tooltip.style.display = 'block';
-      });
+    // Загружаем первую карту при инициализации
+    loadMap('map1');
 
-      marker.addEventListener('mouseleave', () => {
-        tooltip.style.display = 'none';
-        tooltipImg.classList.remove('enlarged');
-      });
-
-      marker.addEventListener('mousemove', e => {
-        tooltip.style.left = `${e.pageX + 15}px`;
-        tooltip.style.top = `${e.pageY + 15}px`;
-      });
-
-      marker.addEventListener('click', () => {
-        tooltipImg.classList.toggle('enlarged');
-      });
-    });
+    // Создаем затемненный фон для увеличенного изображения
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      display: none;
+    `;
+    document.body.appendChild(overlay);
 
     // Обработчик клика по изображению внутри тултипа для увеличения
     tooltipImg.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       tooltipImg.classList.toggle('enlarged');
+      
+      if (tooltipImg.classList.contains('enlarged')) {
+        // Показываем затемненный фон
+        overlay.style.display = 'block';
+      } else {
+        // Скрываем затемненный фон и тултип
+        overlay.style.display = 'none';
+        tooltip.style.display = 'none';
+      }
+    });
+
+    // Клик по затемненному фону закрывает увеличенное изображение
+    overlay.addEventListener('click', () => {
+      tooltipImg.classList.remove('enlarged');
+      overlay.style.display = 'none';
+      tooltip.style.display = 'none';
+    });
+
+    // Скрывать тултип при клике вне его области
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.marker') && !e.target.closest('.tooltip') && !tooltipImg.classList.contains('enlarged')) {
+        tooltip.style.display = 'none';
+        tooltipImg.classList.remove('enlarged');
+        overlay.style.display = 'none';
+      }
     });
 
 
