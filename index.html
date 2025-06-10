@@ -44,41 +44,89 @@
       border-radius: 8px;
       padding: 5px;
       z-index: 100;
+      pointer-events: auto;
     }
     .tooltip img {
       max-width: 200px;
       border-radius: 5px;
       cursor: zoom-in;
+      transition: transform 0.3s ease;
+      display: block;
     }
     .tooltip img.enlarged {
       transform: scale(2);
       cursor: zoom-out;
+      position: relative;
+      z-index: 1001;
+    }
+    
+    /* Responsive design for smaller screens */
+    @media (max-width: 768px) {
+      .tooltip {
+        max-width: 250px;
+        padding: 6px;
+      }
+      
+      .tooltip img {
+        max-width: 150px;
+        max-height: 150px;
+      }
+      
+      .tooltip img.enlarged {
+        transform: scale(1.5);
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .tooltip {
+        max-width: 200px;
+        padding: 4px;
+      }
+      
+      .tooltip img {
+        max-width: 120px;
+        max-height: 120px;
+      }
+      
+      .tooltip img.enlarged {
+        transform: scale(1.3);
+      }
     }
   </style>
 </head>
 <body>
   <div class="map-wrapper" id="mapWrapper">
     <div class="map" id="map">
+      <!-- Hunt: Showdown map markers with authentic locations -->
       <div class="marker" style="top: 28%; left: 33%;" data-img="https://i.imgur.com/MOYMS0r.png"></div>
       <div class="marker" style="top: 62%; left: 25%;" data-img="https://i.imgur.com/pwiylno.png"></div>
       <div class="marker" style="top: 81.2%; left: 85.7%;" data-img="https://i.imgur.com/pfCGLC7.jpg"></div>
     </div>
   </div>
+  
   <div class="tooltip" id="tooltip">
-    <img id="tooltip-img" src="" />
+    <img id="tooltip-img" src="" alt="Location preview" />
   </div>
 
   <script>
+    // Map interaction variables
     const wrapper = document.getElementById('mapWrapper');
     const map = document.getElementById('map');
     const tooltip = document.getElementById('tooltip');
     const tooltipImg = document.getElementById('tooltip-img');
+    
     let scale = 1;
     let origin = { x: 0, y: 0 };
     let isPanning = false;
     let start = { x: 0, y: 0 };
 
+    // Map panning functionality
     wrapper.addEventListener('mousedown', e => {
+      // Prevent panning when clicking on markers or tooltip
+      if (e.target.classList.contains('marker') || e.target.closest('.tooltip')) {
+        return;
+      }
+      
       isPanning = true;
       start = { x: e.clientX - origin.x, y: e.clientY - origin.y };
       wrapper.style.cursor = 'grabbing';
@@ -86,6 +134,7 @@
 
     wrapper.addEventListener('mousemove', e => {
       if (!isPanning) return;
+      
       origin.x = e.clientX - start.x;
       origin.y = e.clientY - start.y;
       map.style.transform = `translate(${origin.x}px, ${origin.y}px) scale(${scale})`;
@@ -96,20 +145,30 @@
       wrapper.style.cursor = 'grab';
     });
 
+    // Prevent context menu on right click for better UX
+    wrapper.addEventListener('contextmenu', e => {
+      e.preventDefault();
+    });
+
+    // Map zooming functionality
     wrapper.addEventListener('wheel', e => {
       e.preventDefault();
+      
       const rect = map.getBoundingClientRect();
       const offsetX = e.clientX - rect.left;
       const offsetY = e.clientY - rect.top;
       const delta = -e.deltaY / 500;
-      const newScale = Math.min(Math.max(0.5, scale + delta), 3);
+      const newScale = Math.min(Math.max(0.3, scale + delta), 4);
 
+      // Calculate new origin to zoom towards mouse cursor
       origin.x = e.clientX - (offsetX * newScale / scale);
       origin.y = e.clientY - (offsetY * newScale / scale);
       scale = newScale;
+      
       map.style.transform = `translate(${origin.x}px, ${origin.y}px) scale(${scale})`;
     }, { passive: false });
 
+    // Marker interaction functionality
     document.querySelectorAll('.marker').forEach(marker => {
       marker.addEventListener('mouseenter', e => {
         tooltipImg.src = marker.dataset.img;
@@ -129,11 +188,16 @@
       marker.addEventListener('click', () => {
         tooltipImg.classList.toggle('enlarged');
       });
-      // Обработчик клика по изображению внутри тултипа для увеличения
-      tooltipImg.addEventListener('click', () => {
-      tooltipImg.classList.toggle('enlarged');
-      });
     });
+
+    // Обработчик клика по изображению внутри тултипа для увеличения
+    tooltipImg.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      tooltipImg.classList.toggle('enlarged');
+    });
+
+
   </script>
 </body>
 </html>
